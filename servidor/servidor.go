@@ -132,3 +132,44 @@ func BuscarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+
+	ID, erro := strconv.ParseUint(parametros["id"], 10, 32)
+	if erro != nil {
+		w.Write([]byte("Erro ao conveter parâmetro"))
+		return
+	}
+
+	corpoRequisicao, erro := ioutil.ReadAll(r.Body)
+	if erro != nil {
+		w.Write([]byte("Erro ao ler o corpo da requisição"))
+		return
+	}
+
+	var usuario usuario
+	if erro := json.Unmarshal(corpoRequisicao, &usuario); erro != nil {
+		w.Write([]byte("Erro ao converter o usuário pra struct"))
+		return
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		w.Write([]byte("Erro ao conectar ao banco de dados"))
+		return
+	}
+	defer db.Close()
+
+	statement, erro := db.Prepare("update usuarios set nome = ? where id = ?")
+	if erro != nil {
+		w.Write([]byte("Erro ao criar statement"))
+		return
+	}
+	defer statement.Close()
+
+	if _, erro := statement.Exec(&usuario.Nome, ID); erro != nil {
+		w.Write([]byte("Erro ao atualizar o usuário"))
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
