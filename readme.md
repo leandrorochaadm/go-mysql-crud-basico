@@ -1,9 +1,9 @@
-## CRUD basico com MySql
+## CRUD básico em Linguagem Go com MySql
 
-*URI base: * localhost:5000/usuarios
+**URI base:** localhost:5000/usuarios
 
 
-*POST padrão: *
+**Exemplo de POST:**
 
 ``` json
 {
@@ -11,4 +11,4 @@
 	"email":"leandro@user.com",
 	"senha":"123"
 }
-``
+```
