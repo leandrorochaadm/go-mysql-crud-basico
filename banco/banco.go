@@ -14,13 +14,9 @@ func exec(db *sql.DB, sql string) sql.Result {
 	return result
 }
 
-func criacaoBanco(db sql.Result) {
-
-}
-
 func Conectar() (*sql.DB, error) {
-	stringConexao := "root:123456Asdf@/cursogo?charset=utf8&parseTime=True&loc=Local"
 
+	stringConexao := "root:123456Asdf@/"
 	db, erro := sql.Open("mysql", stringConexao)
 	if erro != nil {
 		return nil, erro
@@ -36,6 +32,11 @@ func Conectar() (*sql.DB, error) {
 		senha varchar(32),
 		PRIMARY KEY (id)
 		) ENGINE=InnoDB;`)
+
+	db, erro = sql.Open("mysql", stringConexao+"cursogo?charset=utf8&parseTime=True&loc=Local")
+	if erro != nil {
+		return nil, erro
+	}
 
 	// testando conexao com banco
 	if erro = db.Ping(); erro != nil {

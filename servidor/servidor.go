@@ -12,8 +12,10 @@ import (
 )
 
 type usuario struct {
-	ID   uint32 `json:"id"`
-	Nome string `json:"nome"`
+	ID    uint32 `json:"id"`
+	Nome  string `json:"nome"`
+	Email string `json:"email"`
+	Senha string `json:"senha"`
 }
 
 // CriarUsuario insere um novo usuario
@@ -38,7 +40,7 @@ func CriarUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stratement, erro := db.Prepare("insert into usuarios (nome) values (?)")
+	stratement, erro := db.Prepare("insert into usuarios (nome, email, senha) values (?,?,?)")
 	if erro != nil {
 		fmt.Println(erro)
 		w.Write([]byte("Erro ao criar o statement"))
@@ -46,7 +48,7 @@ func CriarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 	defer stratement.Close()
 
-	insercao, erro := stratement.Exec(usuario.Nome)
+	insercao, erro := stratement.Exec(usuario.Nome, usuario.Email, usuario.Senha)
 	if erro != nil {
 		w.Write([]byte("Erro ao inserir o statement"))
 		return
@@ -81,8 +83,9 @@ func BuscarUsuarios(w http.ResponseWriter, r *http.Request) {
 	var usuarios []usuario
 	for linhas.Next() {
 		var usuario usuario
-		if erro := linhas.Scan(&usuario.ID, &usuario.Nome); erro != nil {
+		if erro := linhas.Scan(&usuario.ID, &usuario.Nome, &usuario.Email, &usuario.Senha); erro != nil {
 			w.Write([]byte("Erro ao escanear o usuário"))
+			fmt.Println(erro)
 			return
 		}
 		usuarios = append(usuarios, usuario)
@@ -119,7 +122,7 @@ func BuscarUsuario(w http.ResponseWriter, r *http.Request) {
 
 	var usuario usuario
 	if linhas.Next() {
-		if erro := linhas.Scan(&usuario.ID, &usuario.Nome); erro != nil {
+		if erro := linhas.Scan(&usuario.ID, &usuario.Nome, &usuario.Email, &usuario.Senha); erro != nil {
 			w.Write([]byte("Erro ao escanear o usuario"))
 			return
 		}
@@ -162,14 +165,14 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	statement, erro := db.Prepare("update usuarios set nome = ? where id = ?")
+	statement, erro := db.Prepare("update usuarios set nome = ?, email = ?, senha = ? where id = ?")
 	if erro != nil {
 		w.Write([]byte("Erro ao criar statement"))
 		return
 	}
 	defer statement.Close()
 
-	if _, erro := statement.Exec(&usuario.Nome, ID); erro != nil {
+	if _, erro := statement.Exec(&usuario.Nome, &usuario.Email, &usuario.Senha, ID); erro != nil {
 		w.Write([]byte("Erro ao atualizar o usuário"))
 	}
 	w.WriteHeader(http.StatusNoContent)
