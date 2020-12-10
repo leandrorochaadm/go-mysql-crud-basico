@@ -133,6 +133,7 @@ func BuscarUsuario(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// AtualizarUsuario atualiza usuário por id
 func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 
@@ -170,6 +171,37 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 
 	if _, erro := statement.Exec(&usuario.Nome, ID); erro != nil {
 		w.Write([]byte("Erro ao atualizar o usuário"))
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// DeletarUsuario deleta usuário por id
+func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+	ID, erro := strconv.ParseUint(parametros["id"], 10, 32)
+	if erro != nil {
+		w.Write([]byte("Erro ao converter parâmetro pra inteiro"))
+		return
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		w.Write([]byte("Erro ao conectar ao banco de dados"))
+		return
+	}
+
+	defer db.Close()
+
+	statement, erro := db.Prepare("delete from usuarios where id = ?")
+	if erro != nil {
+		w.Write([]byte("Erro ao criar statement"))
+		return
+	}
+	defer statement.Close()
+
+	if _, erro := statement.Exec(ID); erro != nil {
+		w.Write([]byte("Erro ao deletar usuário"))
+		return
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
